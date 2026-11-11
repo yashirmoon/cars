@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Search 5,000+ FiveM cars with pictures and spawn names.">
+<meta property="og:title" content="Moe's Car Catalog">
+<meta property="og:description" content="Search 5,000+ FiveM cars with pictures and spawn names.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://yashirmoon.github.io/cars/preview.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f2b33d">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px;font-family:system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Moe's Car Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: sticky search bar over a dense showroom grid; a dark garage look on purpose (single theme). */
+:root{
+  --bg:#111317; --panel:#181b21; --card:#1c2027; --line:#2b313b; --text:#eceef2; --muted:#9aa3b2;
+  --accent:#f2b33d; --accent-ink:#1a1407; --stage:#e7e9ee; --warn:#e8915a;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font:14px/1.45 var(--body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header .wrap{padding-block:14px 12px;display:grid;gap:10px}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{margin:0;font:700 30px/1 var(--display);letter-spacing:.5px;text-transform:uppercase;text-wrap:balance}
+h1 span{color:var(--accent)}
+.count{color:var(--muted);font-variant-numeric:tabular-nums}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{font:inherit;color:var(--text)}
+#q{flex:1 1 260px;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;outline:none}
+select{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 10px;max-width:100%}
+#q:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.toggle{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;cursor:pointer;user-select:none}
+main .wrap{padding-block:16px 48px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;text-align:left;padding:0;min-width:0;transition:border-color .12s,transform .12s}
+.card:hover{border-color:#4a5363;transform:translateY(-2px)}
+.pic{width:100%;max-width:100%;aspect-ratio:4/3;background-color:var(--stage);background-repeat:no-repeat}
+.pic.none{display:flex;align-items:center;justify-content:center;background:#20242c;color:var(--muted);font-size:12px}
+.info{padding:9px 11px 11px;display:grid;gap:3px;min-width:0}
+.name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+code{font:500 12.5px var(--mono);color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.copy{flex:none;background:transparent;border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:12px;color:var(--muted);cursor:pointer}
+.copy:hover{color:var(--text);border-color:var(--accent)}
+.meta{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty,.loading{color:var(--muted);text-align:center;padding:60px 0}
+#more{height:1px}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);padding:0;width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+dialog::backdrop{background:rgba(0,0,0,.75)}
+dialog .pic{border-radius:0}
+.dinfo{padding:14px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.dname{font:700 24px/1.1 var(--display);text-transform:uppercase;letter-spacing:.4px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#262b34;border:1px solid var(--line);border-radius:8px;padding:8px 14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+@media (max-width:520px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}h1{font-size:24px}.info{padding:8px 9px 10px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="brand"><h1>Moe's Car <span>Catalog</span></h1><span class="count" id="count">Loading cars…</span></div>
+  <div class="controls">
+    <input id="q" type="search" placeholder="Search spawn name, car or make (e.g. tahoe)" autocomplete="off" aria-label="Search cars">
+    <select id="make" aria-label="Make"><option value="">All makes</option></select>
+    <select id="cls" aria-label="Class"><option value="">All classes</option></select>
+    <select id="lib" aria-label="Where"><option value="">Everywhere</option></select>
+  </div>
+</div></header>
+
+<main><div class="wrap">
+  <div class="grid" id="grid"></div>
+  <div class="loading" id="loading">Loading cars…</div>
+  <div class="empty" id="empty" hidden>No cars match that search.</div>
+  <div id="more"></div>
+</div></main>
+
+<dialog id="dlg" aria-label="Car details">
+  <div class="pic" id="dpic"></div>
+  <div class="dinfo">
+    <div style="min-width:0"><div class="dname" id="dname"></div><div class="meta" id="dmeta" style="white-space:normal"></div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="dcopy">Copy spawn name</button><button class="btn ghost" id="dclose">Close</button></div>
+  </div>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm = s => String(s ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+let CARS = [], G = null, shown = [], drawn = 0;
+const PAGE = 120;
+
+function picStyle(p){
+  if (!p) return "";
+  const [sheet, cell] = p, col = cell % G.cols, row = Math.floor(cell / G.cols);
+  const x = G.cols > 1 ? col / (G.cols - 1) * 100 : 0, y = G.rows > 1 ? row / (G.rows - 1) * 100 : 0;
+  return `background-image:url(sheet_${String(sheet).padStart(2,"0")}.jpg);background-size:${G.cols*100}% ${G.rows*100}%;background-position:${x}% ${y}%`;
+}
+function title(c){ return c.n || c.s; }
+
+function render(){
+  const words = $("q").value.toLowerCase().split(/\s+/).map(norm).filter(Boolean);
+  const mk = $("make").value, cl = $("cls").value, lb = $("lib").value, pics = false;
+  shown = CARS.filter(c => (!pics || c.p) && (!mk || c.m === mk) && (!cl || c.c === cl) &&
+    (!lb || (", " + (c.l || "") + ", ").includes(", " + lb + ", ")) && words.every(w => c.k.includes(w)));
+  $("count").textContent = shown.length.toLocaleString() + " of " + CARS.length.toLocaleString() + " cars";
+  $("empty").hidden = shown.length > 0;
+  $("grid").innerHTML = ""; drawn = 0; more();
+  try { localStorage.setItem("mcc", JSON.stringify({q:$("q").value, make:mk, cls:cl, lib:lb, pics})); } catch(e) {}
+}
+function more(){
+  if (drawn >= shown.length) return;
+  const html = shown.slice(drawn, drawn + PAGE).map((c, j) => {
+    const i = drawn + j;
+    return `<button class="card" data-i="${i}" type="button">
+      ${c.p ? `<div class="pic" style="${picStyle(c.p)}"></div>` : `<div class="pic none">No picture yet</div>`}
+      <div class="info">
+        <div class="name" title="${esc(title(c))}">${esc(title(c))}</div>
+        <div class="row"><code title="${esc(c.s)}">${esc(c.s)}</code><span class="copy" data-copy="${esc(c.s)}" role="button" tabindex="0">Copy</span></div>
+        <div class="meta">${esc([c.m, c.c].filter(Boolean).join(" · ") || " ")}</div>
+      </div></button>`;
+  }).join("");
+  $("grid").insertAdjacentHTML("beforeend", html);
+  drawn = Math.min(shown.length, drawn + PAGE);
+}
+new IntersectionObserver(es => { if (es[0].isIntersecting) more(); }, { rootMargin: "800px" }).observe($("more"));
+
+function toast(t){ const el = $("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 1500); }
+function copy(t){
+  const ok = () => toast("Copied " + t);
+  const fallback = () => { const a = document.createElement("textarea"); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand("copy"); ok(); } catch(e) { toast("Select and copy: " + t); } a.remove(); };
+  try { navigator.clipboard.writeText(t).then(ok, fallback); } catch(e) { fallback(); }
+}
+let cur = null;
+function openCar(c){
+  cur = c;
+  const p = $("dpic"); p.className = c.p ? "pic" : "pic none"; p.setAttribute("style", picStyle(c.p)); p.textContent = c.p ? "" : "No picture yet";
+  $("dname").textContent = title(c);
+  $("dmeta").textContent = [c.s, c.m, c.c].filter(Boolean).join(" · ");
+  if (!$("dlg").open) $("dlg").showModal();
+  if (/^[A-Za-z0-9-]+$/.test(c.s)) history.replaceState(null, "", "#" + c.s);
+}
+function closeCar(){ $("dlg").close(); }
+$("dlg").addEventListener("close", () => { if (location.hash) history.replaceState(null, "", location.pathname + location.search); });
+$("grid").addEventListener("click", e => {
+  const cp = e.target.closest("[data-copy]"); if (cp) { e.stopPropagation(); copy(cp.dataset.copy); return; }
+  const card = e.target.closest(".card"); if (card) openCar(shown[+card.dataset.i]);
+});
+$("grid").addEventListener("keydown", e => { const cp = e.target.closest("[data-copy]"); if (cp && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); e.stopPropagation(); copy(cp.dataset.copy); } });
+$("dcopy").onclick = () => cur && copy(cur.s);
+$("dclose").onclick = closeCar;
+$("dlg").addEventListener("click", e => { if (e.target === $("dlg")) closeCar(); });
+document.addEventListener("keydown", e => { if (e.key === "/" && document.activeElement !== $("q")) { e.preventDefault(); $("q").focus(); } });
+let t; $("q").addEventListener("input", () => { clearTimeout(t); t = setTimeout(render, 90); });
+["make","cls","lib"].forEach(id => $(id).addEventListener("change", render));
+
+function openFromHash(){
+  const h = decodeURIComponent(location.hash.slice(1)).toLowerCase(); if (!h) return;
+  const c = CARS.find(x => x.s.toLowerCase() === h); if (c) openCar(c);
+}
+window.addEventListener("hashchange", openFromHash);
+
+fetch("cars.json").then(r => r.json()).then(d => {
+  G = d; CARS = d.cars;
+  for (const c of CARS) {
+    if (c.m && norm(c.m) === norm(c.s)) delete c.m;
+    if (c.c === "Suv") c.c = "SUV";
+    c.k = [c.s, c.n, c.m, c.c].map(norm).join(" ");
+  }
+  const fill = (sel, vals, label = v => v) => [...new Set(vals.filter(Boolean))].sort((a,b) => a.localeCompare(b, undefined, {numeric:true})).forEach(v => sel.add(new Option(label(v), v)));
+  fill($("make"), CARS.map(c => c.m));
+  fill($("cls"), CARS.map(c => c.c));
+  fill($("lib"), CARS.flatMap(c => (c.l || "").split(", ")), v => v === "cars2moe" ? "cars2moe (server)" : v);
+  try { const s = JSON.parse(localStorage.getItem("mcc") || "{}"); if (s.q) $("q").value = s.q; for (const k of ["make","cls","lib"]) if (s[k]) $(k).value = s[k]; } catch(e) {}
+  $("loading").hidden = true;
+  render(); openFromHash();
+}).catch(() => { $("loading").textContent = "Couldn't load the car list. Refresh the page to try again."; });
+</script>
+
+</body>
+</html>
