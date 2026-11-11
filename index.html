@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Search 5,700+ FiveM cars with pictures and spawn names.">
+<meta name="description" content="Search 5,400+ FiveM cars with pictures and spawn names.">
 <meta property="og:title" content="Moe's Car Catalog">
-<meta property="og:description" content="Search 5,700+ FiveM cars with pictures and spawn names.">
+<meta property="og:description" content="Search 5,400+ FiveM cars with pictures and spawn names.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://yashirmoon.github.io/cars/preview.jpg">
 <meta name="twitter:card" content="summary_large_image">
@@ -130,7 +130,7 @@ function more(){
       <div class="info">
         <div class="name" title="${esc(title(c))}">${esc(title(c))}</div>
         <div class="row"><code title="${esc(c.s)}">${esc(c.s)}</code><span class="copy" data-copy="${esc(c.s)}" role="button" tabindex="0">Copy</span></div>
-        <div class="meta">${esc([c.m, c.c].filter(Boolean).join(" · ") || " ")}</div>
+        <div class="meta">${esc([c.m, c.c].filter(Boolean).join(" · ") || " ")}</div>${c.a ? `<div class="meta" title="Same car, other spawn names">also: ${esc(c.a.join(", "))}</div>` : ""}
       </div></button>`;
   }).join("");
   $("grid").insertAdjacentHTML("beforeend", html);
@@ -149,7 +149,7 @@ function openCar(c){
   cur = c;
   const p = $("dpic"); p.className = c.p ? "pic" : "pic none"; p.setAttribute("style", picStyle(c.p)); p.textContent = c.p ? "" : "No picture yet";
   $("dname").textContent = title(c);
-  $("dmeta").textContent = [c.s, c.m, c.c].filter(Boolean).join(" · ");
+  $("dmeta").textContent = [c.s, c.m, c.c, c.a ? "also spawns as: " + c.a.join(", ") : ""].filter(Boolean).join(" · ");
   if (!$("dlg").open) $("dlg").showModal();
   if (/^[A-Za-z0-9-]+$/.test(c.s)) history.replaceState(null, "", "#" + c.s);
 }
@@ -169,7 +169,7 @@ let t; $("q").addEventListener("input", () => { clearTimeout(t); t = setTimeout(
 
 function openFromHash(){
   const h = decodeURIComponent(location.hash.slice(1)).toLowerCase(); if (!h) return;
-  const c = CARS.find(x => x.s.toLowerCase() === h); if (c) openCar(c);
+  const c = CARS.find(x => x.s.toLowerCase() === h || (x.a || []).some(y => y.toLowerCase() === h)); if (c) openCar(c);
 }
 window.addEventListener("hashchange", openFromHash);
 
@@ -178,7 +178,7 @@ fetch("cars.json").then(r => r.json()).then(d => {
   for (const c of CARS) {
     if (c.m && norm(c.m) === norm(c.s)) delete c.m;
     if (c.c === "Suv") c.c = "SUV";
-    c.k = [c.s, c.n, c.m, c.c].map(norm).join(" ");
+    c.k = [c.s, c.n, c.m, c.c, ...(c.a || [])].map(norm).join(" ");
   }
   const fill = (sel, vals, label = v => v) => [...new Set(vals.filter(Boolean))].sort((a,b) => a.localeCompare(b, undefined, {numeric:true})).forEach(v => sel.add(new Option(label(v), v)));
   fill($("make"), CARS.map(c => c.m));
